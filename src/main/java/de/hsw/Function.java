@@ -10,6 +10,8 @@ import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Azure Functions with HTTP Trigger.
@@ -40,4 +42,67 @@ public class Function {
             return request.createResponseBuilder(HttpStatus.OK).body("Hello, " + name).build();
         }
     }
+
+    public boolean validateIsbn(String isbn){
+        if(isbn.length()!= 10){
+            return false;
+        }
+        int sum = 0;
+        for(int i=1; i<11; i++){
+            String nextChar = Character.toString(isbn.charAt(i-1));
+            int nextInt;
+            if(i==10 && nextChar.equals("X")){
+                nextInt = 10;
+            }
+            else {
+                try {
+                    nextInt = Integer.parseInt(nextChar);
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+                if(0 <= nextInt && nextInt < 10){
+                    //valides Zeichen
+                }
+                else{
+                    return false;
+                }
+            }
+            sum = sum + (nextInt*i);
+        }
+        double modulo = sum % 11;
+        if (modulo != 0){
+            return false;
+        }
+        else return true;
+    }
+
+    public char calculateCheckDigit(String isbn){
+        if(isbn.length() != 9){
+            return 'f';
+        }
+        int sum = 0;
+        for (int i=1; i<10; i++){
+            String nextChar = Character.toString(isbn.charAt(i-1));
+            Integer nextInt;
+            try {
+                nextInt = Integer.parseInt(nextChar);
+            } catch (NumberFormatException e) {
+                return 'f';
+            }
+            if(0 <= nextInt && nextInt < 10){
+                //valides Zeichen
+            }
+            else{
+                return 'f';
+            }
+            sum = sum + (nextInt*i);
+        }
+        int modulo = sum % 11;
+        if(modulo == 10){
+            return 'X';
+        }
+        return Character.forDigit(modulo, 10);
+    }
+
+    //TODO format Methode
 }

@@ -50,4 +50,18 @@ public class FunctionTest {
         // Verify
         assertEquals(ret.getStatus(), HttpStatus.OK);
     }
+
+    @Test
+    public void testeIsbnValidator(){
+        String trueIsbn = "3928475320";
+        boolean validatedTrueIsbn = new Function().validateIsbn(trueIsbn);
+        assertTrue(validatedTrueIsbn, "ISBN wird nicht validiert, obwohl sie korrekt ist.");
+    }
+
+    @Test
+    public void testePruefzifferErzeugung(){
+        String isbn = "392847532";
+        char pruefziffer = new Function().calculateCheckDigit(isbn);
+        assertEquals('0', pruefziffer, "Prüfziffer wurde falsch berechnet.");
+    }
 }
