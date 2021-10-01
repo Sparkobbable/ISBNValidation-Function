@@ -15,7 +15,6 @@ import java.util.Optional;
  * Azure Functions with HTTP Trigger.
  */
 public class Function {
-    private String gnumber;
 
     /**
      * This function listens at endpoint "/api/HttpExample". Two ways to invoke it using "curl" command in bash:
@@ -27,13 +26,13 @@ public class Function {
             @HttpTrigger(
                 name = "req",
                 methods = {HttpMethod.GET, HttpMethod.POST},
-                authLevel = AuthorizationLevel.ANONYMOUS) final HttpRequestMessage<Optional<String>> request,
-            final ExecutionContext context) {
+                authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
+            ExecutionContext context) {
         context.getLogger().info("Java HTTP trigger processed a request.");
 
         // Parse query parameter
-        final String query = request.getQueryParameters().get("name");
-        final String name = request.getBody().orElse(query);
+        String query = request.getQueryParameters().get("name");
+        String name = request.getBody().orElse(query);
 
         if (name == null) {
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
@@ -43,20 +42,20 @@ public class Function {
         }
     }
 
-    public boolean validateIsbn(final String isbn) {
+    public boolean validateIsbn(String isbn) {
         if (isbn.length() != 10) {
             return false;
         }
         int sum = 0;
         for (int i = 1; i < 11; i++) {
-            final String nextChar = Character.toString(isbn.charAt(i - 1));
+            String nextChar = Character.toString(isbn.charAt(i - 1));
             int nextInt;
             if (i == 10 && nextChar.equals("X")) {
                 nextInt = 10;
             } else {
                 try {
                     nextInt = Integer.parseInt(nextChar);
-                } catch (final NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     return false;
                 }
                 if (0 <= nextInt && nextInt < 10) {
@@ -67,24 +66,24 @@ public class Function {
             }
             sum = sum + (nextInt * i);
         }
-        final double modulo = sum % 11;
+        double modulo = sum % 11;
         if (modulo != 0) {
             return false;
         } else
             return true;
     }
 
-    public char calculateCheckDigit(final String isbn){
+    public char calculateCheckDigit(String isbn){
         if(isbn.length() != 9){
             return 'f';
         }
         int sum = 0;
         for (int i=1; i<10; i++){
-            final String nextChar = Character.toString(isbn.charAt(i-1));
+            String nextChar = Character.toString(isbn.charAt(i-1));
             Integer nextInt;
             try {
                 nextInt = Integer.parseInt(nextChar);
-            } catch (final NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 return 'f';
             }
             if(0 <= nextInt && nextInt < 10){
@@ -95,15 +94,18 @@ public class Function {
             }
             sum = sum + (nextInt*i);
         }
-        final int modulo = sum % 11;
+        int modulo = sum % 11;
         if(modulo == 10){
             return 'X';
         }
         return Character.forDigit(modulo, 10);
     }
 
-    public String genereteISBN(final String gnumber, final String vnumber, final String tnumber){
+    public String generateISBN(String gnumber, String vnumber, String tnumber){
         String isbn = gnumber + vnumber + tnumber;
+        char checkDigit = calculateCheckDigit(isbn);
+        isbn = isbn + checkDigit;
+        return isbn;
     }
 
     

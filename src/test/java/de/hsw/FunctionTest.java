@@ -54,8 +54,11 @@ public class FunctionTest {
     @Test
     public void testIsbnValidator(){
         String trueIsbn = "3928475320";
+        String trueIsbn2 = "3551551677";
         boolean validatedTrueIsbn = new Function().validateIsbn(trueIsbn);
+        boolean validatedTrueIsbn2 = new Function().validateIsbn(trueIsbn2);
         assertTrue(validatedTrueIsbn, "ISBN wird nicht validiert, obwohl sie korrekt ist.");
+        assertTrue(validatedTrueIsbn2, "ISBN2 wird nicht validiert, obwohl sie korrekt ist.");
     }
 
     @Test
@@ -66,9 +69,12 @@ public class FunctionTest {
     }
     @Test
     public void testeIsbnErzeugung(){
-        String gnumber = "0";
-        String vnumber = "2258";
-        String tnumber = "3110";
-        String Isbn = new Funcion().genereteISBN(gnumber,vnumber,tnumber);
-        assertEquals('0', pruefziffer, "Prüfziffer wurde falsch berechnet.");
+        String gnumber = "3";
+        String vnumber = "9284";
+        String tnumber = "7532";
+        String isbn = new Function().generateISBN(gnumber,vnumber,tnumber);
+        assertEquals("3928475320", isbn, "ISBN wurde falsch berechnet.");
+        String isbn2 = new Function().generateISBN("3", "5515", "5167");
+        assertEquals("3551551677", isbn2, "ISBN2 wurde falsch berechnet.");
+    }
 }
