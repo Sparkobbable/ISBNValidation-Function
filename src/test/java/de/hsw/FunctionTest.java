@@ -52,16 +52,16 @@ public class FunctionTest {
     }
 
     @Test
-    public void testeIsbnValidator(){
+    public void testIsbnValidator(){
         String trueIsbn = "3928475320";
         boolean validatedTrueIsbn = new Function().validateIsbn(trueIsbn);
         assertTrue(validatedTrueIsbn, "ISBN wird nicht validiert, obwohl sie korrekt ist.");
     }
 
     @Test
-    public void testePruefzifferErzeugung(){
+    public void testCheckDigitCalculation(){
         String isbn = "392847532";
-        char pruefziffer = new Function().calculateCheckDigit(isbn);
-        assertEquals('0', pruefziffer, "Prüfziffer wurde falsch berechnet.");
+        char checkDigit = new Function().calculateCheckDigit(isbn);
+        assertEquals('0', checkDigit, "Prüfziffer wurde falsch berechnet.");
     }
 }
