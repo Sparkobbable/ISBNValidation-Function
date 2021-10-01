@@ -64,4 +64,11 @@ public class FunctionTest {
         char checkDigit = new Function().calculateCheckDigit(isbn);
         assertEquals('0', checkDigit, "Prüfziffer wurde falsch berechnet.");
     }
+    @Test
+    public void testeIsbnErzeugung(){
+        String gnumber = "0";
+        String vnumber = "2258";
+        String tnumber = "3110";
+        String Isbn = new Funcion().genereteISBN(gnumber,vnumber,tnumber);
+        assertEquals('0', pruefziffer, "Prüfziffer wurde falsch berechnet.");
 }
