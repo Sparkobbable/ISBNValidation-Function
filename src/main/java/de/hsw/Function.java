@@ -223,7 +223,7 @@ public class Function {
 
     public String generateISBN(String gnumber, String vnumber, String tnumber) throws Exception{
         String isbn = gnumber + "-" + vnumber + "-" + tnumber + "-";
-        char checkDigit = calculateCheckDigit(isbn);
+        char checkDigit = calculateCheckDigit(gnumber+vnumber+tnumber);
         isbn = isbn + checkDigit;
         return isbn;
     }
