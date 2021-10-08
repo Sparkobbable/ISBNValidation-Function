@@ -42,6 +42,83 @@ public class Function {
         }
     }
 
+    @FunctionName("validateIsbn")
+    public HttpResponseMessage validate(
+            @HttpTrigger(
+                name = "req",
+                methods = {HttpMethod.GET},
+                authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
+            ExecutionContext context) {
+        context.getLogger().info("Java HTTP trigger processed a request.");
+
+        // Parse query parameter
+        String isbn = request.getQueryParameters().get("isbn");
+
+        if (isbn == null) {
+            return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                    .body("Please pass an ISBN on the query string").build();
+        } else {
+            if(validateIsbn(isbn)){
+                return request.createResponseBuilder(HttpStatus.OK).body("The ISBN \""+isbn+"\" is valid.").build();
+            }
+            return request.createResponseBuilder(HttpStatus.OK).body("The ISBN \""+isbn+"\" is invalid.").build();
+        }
+    }
+
+    @FunctionName("calculateCheckDigit")
+    public HttpResponseMessage calculate(
+            @HttpTrigger(
+                name = "req",
+                methods = {HttpMethod.GET},
+                authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
+            ExecutionContext context) {
+        context.getLogger().info("Java HTTP trigger processed a request.");
+
+        // Parse query parameter
+        String isbn = request.getQueryParameters().get("isbn");
+
+        if (isbn == null) {
+            return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                    .body("Please pass an ISBN on the query string").build();
+        } else {
+            char cd;
+            try {
+                cd = calculateCheckDigit(isbn);
+            } catch (Exception e) {
+                return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("Fehler: "+e.getMessage()).build();
+            }
+            return request.createResponseBuilder(HttpStatus.OK).body("The calculated Checkdigit is \""+cd+"\".").build();
+        }
+    }
+
+    @FunctionName("createIsbn")
+    public HttpResponseMessage build(
+            @HttpTrigger(
+                name = "req",
+                methods = {HttpMethod.GET},
+                authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
+            ExecutionContext context) {
+        context.getLogger().info("Java HTTP trigger processed a request.");
+
+        // Parse query parameter
+        String gnumber = request.getQueryParameters().get("gnumber");
+        String vnumber = request.getQueryParameters().get("vnumber");
+        String tnumber = request.getQueryParameters().get("tnumber");
+
+        if (gnumber == null || vnumber == null || tnumber == null) {
+            return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                    .body("Please pass a gnumber(Gruppennummer), vnumber(Verlagsnummer) and tnumber(Titelnummer) on the query string").build();
+        } else {
+            String isbn;
+            try {
+                isbn = generateISBN(gnumber, vnumber, tnumber);
+            } catch (Exception e) {
+                return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("Fehler: "+e.getMessage()).build();
+            }
+            return request.createResponseBuilder(HttpStatus.OK).body("The calculated ISBN is \""+isbn+"\".").build();
+        }
+    }
+
     public boolean validateIsbn(String isbn) {
         if (isbn.length() != 10) {
             return false;
@@ -73,9 +150,9 @@ public class Function {
             return true;
     }
 
-    public char calculateCheckDigit(String isbn){
+    public char calculateCheckDigit(String isbn) throws Exception{
         if(isbn.length() != 9){
-            return 'f';
+            throw new Exception("Der ISBN-String hat die falsche Länge!");
         }
         int sum = 0;
         for (int i=1; i<10; i++){
@@ -84,13 +161,13 @@ public class Function {
             try {
                 nextInt = Integer.parseInt(nextChar);
             } catch (NumberFormatException e) {
-                return 'f';
+                throw new Exception("Der ISBN-String enthält unerwartete Zeichen!");
             }
             if(0 <= nextInt && nextInt < 10){
                 //valides Zeichen
             }
             else{
-                return 'f';
+                throw new Exception("Der ISBN-String enthält unerwartete Zeichen!");
             }
             sum = sum + (nextInt*i);
         }
@@ -101,7 +178,7 @@ public class Function {
         return Character.forDigit(modulo, 10);
     }
 
-    public String generateISBN(String gnumber, String vnumber, String tnumber){
+    public String generateISBN(String gnumber, String vnumber, String tnumber) throws Exception{
         String isbn = gnumber + vnumber + tnumber;
         char checkDigit = calculateCheckDigit(isbn);
         isbn = isbn + checkDigit;

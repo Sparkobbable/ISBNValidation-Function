@@ -64,7 +64,12 @@ public class FunctionTest {
     @Test
     public void testCheckDigitCalculation(){
         String isbn = "392847532";
-        char checkDigit = new Function().calculateCheckDigit(isbn);
+        char checkDigit = '4';
+        try {
+            checkDigit = new Function().calculateCheckDigit(isbn);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
         assertEquals('0', checkDigit, "Prüfziffer wurde falsch berechnet.");
     }
     @Test
@@ -72,9 +77,15 @@ public class FunctionTest {
         String gnumber = "3";
         String vnumber = "9284";
         String tnumber = "7532";
-        String isbn = new Function().generateISBN(gnumber,vnumber,tnumber);
+        String isbn="0", isbn2 = "0";
+        try {
+            isbn = new Function().generateISBN(gnumber,vnumber,tnumber);
+            isbn2 = new Function().generateISBN("3", "5515", "5167");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         assertEquals("3928475320", isbn, "ISBN wurde falsch berechnet.");
-        String isbn2 = new Function().generateISBN("3", "5515", "5167");
+        
         assertEquals("3551551677", isbn2, "ISBN2 wurde falsch berechnet.");
     }
 }
