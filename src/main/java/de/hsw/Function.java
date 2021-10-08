@@ -9,12 +9,18 @@ import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Map.Entry;
 
 /**
  * Azure Functions with HTTP Trigger.
  */
 public class Function {
+
+    private static HashMap<LocalDateTime, Historieneintrag> historie = new HashMap<>();
 
     /**
      * This function listens at endpoint "/api/HttpExample". Two ways to invoke it using "curl" command in bash:
@@ -53,15 +59,23 @@ public class Function {
 
         // Parse query parameter
         String isbn = request.getQueryParameters().get("isbn");
+        Historieneintrag h = new Historieneintrag();
+        historie.put(LocalDateTime.now(), h);
+        
+        
 
         if (isbn == null) {
+            h.setAnfrage("ValidateISBN mit leerer ISBN");
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
                     .body("Please pass an ISBN on the query string").build();
         } else {
+            h.setAnfrage("ValidateISBN mit folgender ISBN: "+isbn);
             if(validateIsbn(isbn)){
-                return request.createResponseBuilder(HttpStatus.OK).body("The ISBN \""+isbn+"\" is valid.").build();
+                h.setAntwort("valid");
+                return request.createResponseBuilder(HttpStatus.OK).body("valid").build();
             }
-            return request.createResponseBuilder(HttpStatus.OK).body("The ISBN \""+isbn+"\" is invalid.").build();
+            h.setAntwort("invalid");
+            return request.createResponseBuilder(HttpStatus.OK).body("invalid").build();
         }
     }
 
@@ -75,20 +89,43 @@ public class Function {
         context.getLogger().info("Java HTTP trigger processed a request.");
 
         // Parse query parameter
+        Historieneintrag h = new Historieneintrag();
+        historie.put(LocalDateTime.now(), h);
+
         String isbn = request.getQueryParameters().get("isbn");
 
         if (isbn == null) {
+            h.setAnfrage("calculateCheckDigit mit leerem ISBN-Parameter");
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
                     .body("Please pass an ISBN on the query string").build();
         } else {
+            h.setAnfrage("calculateCheckDigit ISBN: "+isbn);
             char cd;
             try {
                 cd = calculateCheckDigit(isbn);
             } catch (Exception e) {
+                h.setAntwort("Fehler: "+e.getMessage());
                 return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("Fehler: "+e.getMessage()).build();
             }
-            return request.createResponseBuilder(HttpStatus.OK).body("The calculated Checkdigit is \""+cd+"\".").build();
+            h.setAntwort("The calculated Checkdigit is \""+cd+"\".");
+            return request.createResponseBuilder(HttpStatus.OK).body(cd).build();
         }
+    }
+
+    @FunctionName("showHistory")
+    public HttpResponseMessage showHistory(@HttpTrigger(name="req", 
+                methods = {HttpMethod.GET}, 
+                authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
+                ExecutionContext context) {
+        context.getLogger().info("Java HTTP trigger processed a request.");
+        StringBuilder sb = new StringBuilder("Historie\n");
+        for (Entry e : historie.entrySet()){
+            sb.append("LocalDateTime: " + e.getKey()).append("\nAnfrage: "+ ((Historieneintrag)e.getValue()).getAnfrage());
+            sb.append("\nAntwort: "+ ((Historieneintrag) e.getValue()).getAntwort());
+        }
+        String hist = sb.toString();
+        return request.createResponseBuilder(HttpStatus.OK).body(hist).build();
+
     }
 
     @FunctionName("createIsbn")
@@ -101,21 +138,27 @@ public class Function {
         context.getLogger().info("Java HTTP trigger processed a request.");
 
         // Parse query parameter
+        Historieneintrag h = new Historieneintrag();
+        historie.put(LocalDateTime.now(), h);
         String gnumber = request.getQueryParameters().get("gnumber");
         String vnumber = request.getQueryParameters().get("vnumber");
         String tnumber = request.getQueryParameters().get("tnumber");
 
         if (gnumber == null || vnumber == null || tnumber == null) {
+            h.setAnfrage("generateISBN mit fehlenden Parametern");
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
                     .body("Please pass a gnumber(Gruppennummer), vnumber(Verlagsnummer) and tnumber(Titelnummer) on the query string").build();
         } else {
             String isbn;
+            h.setAnfrage("generateIsbn mit Gruppennummer: "+gnumber+", Verlagsnummer: "+vnumber+" und Titelnummer: "+tnumber);
             try {
                 isbn = generateISBN(gnumber, vnumber, tnumber);
             } catch (Exception e) {
+                h.setAntwort("Fehler: "+e.getMessage());
                 return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("Fehler: "+e.getMessage()).build();
             }
-            return request.createResponseBuilder(HttpStatus.OK).body("The calculated ISBN is \""+isbn+"\".").build();
+            h.setAntwort("The calculated ISBN is \""+isbn+"\".");
+            return request.createResponseBuilder(HttpStatus.OK).body(isbn).build();
         }
     }
 
