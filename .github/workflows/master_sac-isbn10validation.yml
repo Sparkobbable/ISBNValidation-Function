@@ -1,85 +1,43 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
-
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-
-
 
 name: Build and deploy Java project to Azure Function App - SAC-ISBN10Validation
 
-
-
 on:
-
   push:
-
     branches:
-
       - master
-
   workflow_dispatch:
 
-
-
 env:
-
   AZURE_FUNCTIONAPP_NAME: SAC-ISBN10Validation # set this to your function app name on Azure
-
   PACKAGE_DIRECTORY: '.' # set this to the directory which contains pom.xml file
-
   JAVA_VERSION: '11' # set this to the java version to use
 
-
-
 jobs:
-
   build-and-deploy:
-
     runs-on: windows-latest
-
     steps:
-
       - name: 'Checkout GitHub Action'
-
         uses: actions/checkout@v2
 
-
-
       - name: Setup Java Sdk ${{ env.JAVA_VERSION }}
-
         uses: actions/setup-java@v1
-
         with:
-
           java-version: ${{ env.JAVA_VERSION }}
 
-
-
       - name: 'Restore Project Dependencies Using Mvn'
-
         shell: pwsh
-
         run: |
-
           pushd './${{ env.PACKAGE_DIRECTORY }}'
-
           mvn clean package
-
           popd
-
       - name: 'Run Azure Functions Action'
-
         uses: Azure/functions-action@v1
-
         id: fa
-
         with:
-
           app-name: 'SAC-ISBN10Validation'
-
-          slot-name: 'production'
-
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_061f5f8f589c4ed3a50584cc255d1564 }}
-
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5B0900EA40014BB5835877AA26B250FB }}
           package: '${{ env.PACKAGE_DIRECTORY }}'
-
           respect-pom-xml: true
