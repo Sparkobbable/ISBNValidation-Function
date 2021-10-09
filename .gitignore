@@ -35,3 +35,9 @@ hs_err_pid*
 # Azure Functions
 bin/
 obj/
+
+.github/*
+.github/workflows/master_SAC-ISBN10Validation.yml
+.github/workflows/master_SAC-ISBN10Validation.yml
+.github/workflows/master_sac-isbn10validation.yml
+*.yml
