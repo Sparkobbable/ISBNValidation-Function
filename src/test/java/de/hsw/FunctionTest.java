@@ -84,8 +84,8 @@ public class FunctionTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        assertEquals("3928475320", isbn, "ISBN wurde falsch berechnet.");
+        assertEquals("3-9284-7532-0", isbn, "ISBN wurde falsch berechnet.");
         
-        assertEquals("3551551677", isbn2, "ISBN2 wurde falsch berechnet.");
+        assertEquals("3-5515-5167-7", isbn2, "ISBN2 wurde falsch berechnet.");
     }
 }

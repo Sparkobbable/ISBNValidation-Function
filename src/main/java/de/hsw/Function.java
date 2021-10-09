@@ -20,7 +20,7 @@ import java.util.Map.Entry;
  */
 public class Function {
 
-    private static HashMap<LocalDateTime, Historieneintrag> historie = new HashMap<>();
+    public static HashMap<LocalDateTime, Historieneintrag> historie = new HashMap<>();
 
     /**
      * This function listens at endpoint "/api/HttpExample". Two ways to invoke it using "curl" command in bash:
@@ -222,8 +222,8 @@ public class Function {
     }
 
     public String generateISBN(String gnumber, String vnumber, String tnumber) throws Exception{
-        String isbn = gnumber + vnumber + tnumber;
-        char checkDigit = calculateCheckDigit(isbn);
+        String isbn = gnumber + "-" + vnumber + "-" + tnumber + "-";
+        char checkDigit = calculateCheckDigit(gnumber+vnumber+tnumber);
         isbn = isbn + checkDigit;
         return isbn;
     }
