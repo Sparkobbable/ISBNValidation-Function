@@ -40,7 +40,7 @@ public class FunctionTest {
 
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
-        final HttpResponseMessage ret = new Function().validate(req, context);
+        final HttpResponseMessage ret = new Function().validateIsbn(req, context);
 
         assertEquals(HttpStatus.OK, ret.getStatus());
         assertEquals("valid", ret.getBody().toString(), "ISBN wird nicht validiert, Antwort lautet: "+ret.getBody().toString());
@@ -66,11 +66,11 @@ public class FunctionTest {
 
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
-        final HttpResponseMessage ret = new Function().validate(req, context);
+        final HttpResponseMessage ret = new Function().validateIsbn(req, context);
         assertEquals(HttpStatus.BAD_REQUEST, ret.getStatus(), "Falscher Returncode bei ISBN=null");
         assertEquals("Please pass an ISBN on the query string", ret.getBody().toString(), "Fehlerhafte Antwort bei leerer ISBN, Antwort lautet: "+ret.getBody().toString());
         queryParams.put("isbn", "jdj");
-        final HttpResponseMessage ret2 = new Function().validate(req, context);
+        final HttpResponseMessage ret2 = new Function().validateIsbn(req, context);
         assertEquals(HttpStatus.OK, ret2.getStatus());
         assertEquals("invalid", ret2.getBody().toString(), "ISBN wird nicht validiert, Antwort lautet: "+ret.getBody().toString());
     }
@@ -96,7 +96,7 @@ public class FunctionTest {
 
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
-        final HttpResponseMessage ret = new Function().calculate(req, context);
+        final HttpResponseMessage ret = new Function().calculateCheckDigit(req, context);
         
         assertEquals(HttpStatus.OK, ret.getStatus());
         assertEquals("0", ret.getBody().toString(), "Prüfziffer wurde falsch berechnet, Antwort: "+ret.getBody().toString());
@@ -123,13 +123,13 @@ public class FunctionTest {
 
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
-        final HttpResponseMessage ret = new Function().calculate(req, context);
+        final HttpResponseMessage ret = new Function().calculateCheckDigit(req, context);
         
         assertEquals(HttpStatus.BAD_REQUEST, ret.getStatus());
         assertEquals("Fehler: Der ISBN-String hat die falsche Länge!", ret.getBody().toString(), "Fehler wurde falsch ausgegeben, Antwort: "+ret.getBody().toString());
 
         queryParams.put("isbn", "123456h89");
-        final HttpResponseMessage ret2 = new Function().calculate(req, context);
+        final HttpResponseMessage ret2 = new Function().calculateCheckDigit(req, context);
         
         assertEquals(HttpStatus.BAD_REQUEST, ret2.getStatus());
         assertEquals("Fehler: Der ISBN-String enthält unerwartete Zeichen!", ret2.getBody().toString(), "Fehler wurde falsch ausgegeben, Antwort: "+ret.getBody().toString());
@@ -158,7 +158,7 @@ public class FunctionTest {
 
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
-        final HttpResponseMessage ret = new Function().build(req, context);
+        final HttpResponseMessage ret = new Function().createIsbn(req, context);
         
         assertEquals(HttpStatus.OK, ret.getStatus());
         assertEquals("3-9284-7532-0", ret.getBody().toString(), "ISBN wurde falsch berechnet, Antwort: "+ret.getBody().toString());
@@ -186,18 +186,18 @@ public class FunctionTest {
 
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
-        final HttpResponseMessage ret = new Function().build(req, context);
+        final HttpResponseMessage ret = new Function().createIsbn(req, context);
         
         assertEquals(HttpStatus.BAD_REQUEST, ret.getStatus());
         assertEquals("Please pass a gnumber(Gruppennummer), vnumber(Verlagsnummer) and tnumber(Titelnummer) on the query string", ret.getBody().toString(), "Falscher Fehler bei ISBN-Erzeugung, Antwort: "+ret.getBody().toString());
         
         queryParams.put("tnumber", "75324");
-        final HttpResponseMessage ret2 = new Function().build(req, context);
+        final HttpResponseMessage ret2 = new Function().createIsbn(req, context);
         assertEquals(HttpStatus.BAD_REQUEST, ret2.getStatus());
         assertEquals("Fehler: Der ISBN-String hat die falsche Länge!", ret2.getBody().toString(), "Falscher Fehler bei ISBN-Erzeugung, Antwort: "+ret2.getBody().toString());
         
         queryParams.put("tnumber", "753t");
-        final HttpResponseMessage ret3 = new Function().build(req, context);
+        final HttpResponseMessage ret3 = new Function().createIsbn(req, context);
         assertEquals(HttpStatus.BAD_REQUEST, ret3.getStatus());
         assertEquals("Fehler: Der ISBN-String enthält unerwartete Zeichen!", ret3.getBody().toString(), "Falscher Fehler bei ISBN-Erzeugung, Antwort: "+ret3.getBody().toString());
     }

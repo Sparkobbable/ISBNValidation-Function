@@ -24,7 +24,7 @@ public class Function {
      * @return HttpResponseMessage, die entweder "valid" oder "invalid" enthält
      */
     @FunctionName("validateIsbn")
-    public HttpResponseMessage validate(
+    public HttpResponseMessage validateIsbn(
             @HttpTrigger(
                 name = "req",
                 methods = {HttpMethod.GET},
@@ -53,7 +53,7 @@ public class Function {
      * @return HttpResponseMessage mit Prüfziffer
      */
     @FunctionName("calculateCheckDigit")
-    public HttpResponseMessage calculate(
+    public HttpResponseMessage calculateCheckDigit(
             @HttpTrigger(
                 name = "req",
                 methods = {HttpMethod.GET},
@@ -87,7 +87,7 @@ public class Function {
      * @return HttpResponseMessage mit erstellter ISBN-10
      */
     @FunctionName("createIsbn")
-    public HttpResponseMessage build(
+    public HttpResponseMessage createIsbn(
             @HttpTrigger(
                 name = "req",
                 methods = {HttpMethod.GET},
