@@ -14,25 +14,22 @@ import static org.mockito.Mockito.*;
 
 
 /**
- * Unit test for Function class.
+ * Unit tests for Function class.
  */
 public class FunctionTest {
+    
+
     /**
-     * Unit test for HttpTriggerJava method.
+     * Unit-Test für korrekte Isbn-Validierung.
      */
     @Test
-    public void testHttpTriggerJava() throws Exception {
-        // Setup
+    public void testIsbnValidator(){
         @SuppressWarnings("unchecked")
         final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
-
         final Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("name", "Azure");
+        queryParams.put("isbn", "3928475320");
         doReturn(queryParams).when(req).getQueryParameters();
-
-        final Optional<String> queryBody = Optional.empty();
-        doReturn(queryBody).when(req).getBody();
-
+        
         doAnswer(new Answer<HttpResponseMessage.Builder>() {
             @Override
             public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
@@ -43,49 +40,65 @@ public class FunctionTest {
 
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
+        final HttpResponseMessage ret = new Function().validate(req, context);
 
-        // Invoke
-        final HttpResponseMessage ret = new Function().run(req, context);
-
-        // Verify
-        assertEquals(ret.getStatus(), HttpStatus.OK);
+        assertEquals(HttpStatus.OK, ret.getStatus());
+        assertEquals("valid", ret.getBody().toString(), "ISBN wird nicht validiert, Antwort lautet: "+ret.getBody().toString());
     }
 
-    @Test
-    public void testIsbnValidator(){
-        String trueIsbn = "3928475320";
-        String trueIsbn2 = "3551551677";
-        boolean validatedTrueIsbn = new Function().validateIsbn(trueIsbn);
-        boolean validatedTrueIsbn2 = new Function().validateIsbn(trueIsbn2);
-        assertTrue(validatedTrueIsbn, "ISBN wird nicht validiert, obwohl sie korrekt ist.");
-        assertTrue(validatedTrueIsbn2, "ISBN2 wird nicht validiert, obwohl sie korrekt ist.");
-    }
-
+    /**
+     * Unit-Test für korrekte Prüfzifferberechnung.
+     */
     @Test
     public void testCheckDigitCalculation(){
-        String isbn = "392847532";
-        char checkDigit = '4';
-        try {
-            checkDigit = new Function().calculateCheckDigit(isbn);
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-        assertEquals('0', checkDigit, "Prüfziffer wurde falsch berechnet.");
+        @SuppressWarnings("unchecked")
+        final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
+        final Map<String, String> queryParams = new HashMap<>();
+        queryParams.put("isbn", "392847532");
+        doReturn(queryParams).when(req).getQueryParameters();
+        
+        doAnswer(new Answer<HttpResponseMessage.Builder>() {
+            @Override
+            public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
+                HttpStatus status = (HttpStatus) invocation.getArguments()[0];
+                return new HttpResponseMessageMock.HttpResponseMessageBuilderMock().status(status);
+            }
+        }).when(req).createResponseBuilder(any(HttpStatus.class));
+
+        final ExecutionContext context = mock(ExecutionContext.class);
+        doReturn(Logger.getGlobal()).when(context).getLogger();
+        final HttpResponseMessage ret = new Function().calculate(req, context);
+        
+        assertEquals(HttpStatus.OK, ret.getStatus());
+        assertEquals("0", ret.getBody().toString(), "Prüfziffer wurde falsch berechnet, Antwort: "+ret.getBody().toString());
     }
+
+    /**
+     * Unit-Test für korrekte ISBN-Erzeugung.
+     */
     @Test
     public void testeIsbnErzeugung(){
-        String gnumber = "3";
-        String vnumber = "9284";
-        String tnumber = "7532";
-        String isbn="0", isbn2 = "0";
-        try {
-            isbn = new Function().generateISBN(gnumber,vnumber,tnumber);
-            isbn2 = new Function().generateISBN("3", "5515", "5167");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        assertEquals("3-9284-7532-0", isbn, "ISBN wurde falsch berechnet.");
+        @SuppressWarnings("unchecked")
+        final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
+        final Map<String, String> queryParams = new HashMap<>();
+        queryParams.put("gnumber", "3");
+        queryParams.put("vnumber", "9284");
+        queryParams.put("tnumber", "7532");
+        doReturn(queryParams).when(req).getQueryParameters();
         
-        assertEquals("3-5515-5167-7", isbn2, "ISBN2 wurde falsch berechnet.");
+        doAnswer(new Answer<HttpResponseMessage.Builder>() {
+            @Override
+            public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
+                HttpStatus status = (HttpStatus) invocation.getArguments()[0];
+                return new HttpResponseMessageMock.HttpResponseMessageBuilderMock().status(status);
+            }
+        }).when(req).createResponseBuilder(any(HttpStatus.class));
+        
+        final ExecutionContext context = mock(ExecutionContext.class);
+        doReturn(Logger.getGlobal()).when(context).getLogger();
+        final HttpResponseMessage ret = new Function().build(req, context);
+        
+        assertEquals(HttpStatus.OK, ret.getStatus());
+        assertEquals("3-9284-7532-0", ret.getBody().toString(), "ISBN wurde falsch berechnet, Antwort: "+ret.getBody().toString());
     }
 }

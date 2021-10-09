@@ -9,45 +9,20 @@ import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Map.Entry;
 
 /**
  * Azure Functions with HTTP Trigger.
  */
 public class Function {
 
-    public static HashMap<LocalDateTime, Historieneintrag> historie = new HashMap<>();
-
     /**
-     * This function listens at endpoint "/api/HttpExample". Two ways to invoke it using "curl" command in bash:
-     * 1. curl -d "HTTP Body" {your host}/api/HttpExample
-     * 2. curl "{your host}/api/HttpExample?name=HTTP%20Query"
+     * Dient der Validierung von ISBN-10-Strings. Erreichbar unter /api/validateIsbn.
+     * Die zehnstellige ISBN muss als Query Parameter übergeben werden (?isbn=...).
+     * @param request HttpRequestMessage
+     * @param context ExecutionContext
+     * @return HttpResponseMessage, die entweder "valid" oder "invalid" enthält
      */
-    @FunctionName("HttpExample")
-    public HttpResponseMessage run(
-            @HttpTrigger(
-                name = "req",
-                methods = {HttpMethod.GET, HttpMethod.POST},
-                authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
-            ExecutionContext context) {
-        context.getLogger().info("Java HTTP trigger processed a request.");
-
-        // Parse query parameter
-        String query = request.getQueryParameters().get("name");
-        String name = request.getBody().orElse(query);
-
-        if (name == null) {
-            return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
-                    .body("Please pass a name on the query string or in the request body").build();
-        } else {
-            return request.createResponseBuilder(HttpStatus.OK).body("Hello, " + name).build();
-        }
-    }
-
     @FunctionName("validateIsbn")
     public HttpResponseMessage validate(
             @HttpTrigger(
@@ -59,26 +34,24 @@ public class Function {
 
         // Parse query parameter
         String isbn = request.getQueryParameters().get("isbn");
-        Historieneintrag h = new Historieneintrag();
-        historie.put(LocalDateTime.now(), h);
-        
-        
-
         if (isbn == null) {
-            h.setAnfrage("ValidateISBN mit leerer ISBN");
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
                     .body("Please pass an ISBN on the query string").build();
         } else {
-            h.setAnfrage("ValidateISBN mit folgender ISBN: "+isbn);
             if(validateIsbn(isbn)){
-                h.setAntwort("valid");
                 return request.createResponseBuilder(HttpStatus.OK).body("valid").build();
             }
-            h.setAntwort("invalid");
             return request.createResponseBuilder(HttpStatus.OK).body("invalid").build();
         }
     }
 
+    /**
+     * Dient der Berechnung einer Prüfziffer für ISBN-10-Strings. Erreichbar unter /api/calculateCheckDigit.
+     * Die neunstellige ISBN muss als Query Parameter übergeben werden (?isbn=...).
+     * @param request HttpRequestMessage
+     * @param context ExecutionContext
+     * @return HttpResponseMessage mit Prüfziffer
+     */
     @FunctionName("calculateCheckDigit")
     public HttpResponseMessage calculate(
             @HttpTrigger(
@@ -89,45 +62,30 @@ public class Function {
         context.getLogger().info("Java HTTP trigger processed a request.");
 
         // Parse query parameter
-        Historieneintrag h = new Historieneintrag();
-        historie.put(LocalDateTime.now(), h);
-
         String isbn = request.getQueryParameters().get("isbn");
 
         if (isbn == null) {
-            h.setAnfrage("calculateCheckDigit mit leerem ISBN-Parameter");
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
                     .body("Please pass an ISBN on the query string").build();
         } else {
-            h.setAnfrage("calculateCheckDigit ISBN: "+isbn);
             char cd;
             try {
                 cd = calculateCheckDigit(isbn);
             } catch (Exception e) {
-                h.setAntwort("Fehler: "+e.getMessage());
                 return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("Fehler: "+e.getMessage()).build();
             }
-            h.setAntwort("The calculated Checkdigit is \""+cd+"\".");
             return request.createResponseBuilder(HttpStatus.OK).body(cd).build();
         }
     }
 
-    @FunctionName("showHistory")
-    public HttpResponseMessage showHistory(@HttpTrigger(name="req", 
-                methods = {HttpMethod.GET}, 
-                authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
-                ExecutionContext context) {
-        context.getLogger().info("Java HTTP trigger processed a request.");
-        StringBuilder sb = new StringBuilder("Historie\n");
-        for (Entry e : historie.entrySet()){
-            sb.append("LocalDateTime: " + e.getKey()).append("\nAnfrage: "+ ((Historieneintrag)e.getValue()).getAnfrage());
-            sb.append("\nAntwort: "+ ((Historieneintrag) e.getValue()).getAntwort());
-        }
-        String hist = sb.toString();
-        return request.createResponseBuilder(HttpStatus.OK).body(hist).build();
-
-    }
-
+    /**
+     * Dient der Erstellung von ISBN-10-Strings. Erreichbar unter /api/createIsbn.
+     * Die Gruppennummer, Verlagsnummer und Titelnumer müssen als Query Parameter übergeben 
+     * werden (?gnumber=...&vnumber=...&tnumber=...).
+     * @param request HttpRequestMessage
+     * @param context ExecutionContext
+     * @return HttpResponseMessage mit erstellter ISBN-10
+     */
     @FunctionName("createIsbn")
     public HttpResponseMessage build(
             @HttpTrigger(
@@ -138,31 +96,25 @@ public class Function {
         context.getLogger().info("Java HTTP trigger processed a request.");
 
         // Parse query parameter
-        Historieneintrag h = new Historieneintrag();
-        historie.put(LocalDateTime.now(), h);
         String gnumber = request.getQueryParameters().get("gnumber");
         String vnumber = request.getQueryParameters().get("vnumber");
         String tnumber = request.getQueryParameters().get("tnumber");
 
         if (gnumber == null || vnumber == null || tnumber == null) {
-            h.setAnfrage("generateISBN mit fehlenden Parametern");
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
                     .body("Please pass a gnumber(Gruppennummer), vnumber(Verlagsnummer) and tnumber(Titelnummer) on the query string").build();
         } else {
             String isbn;
-            h.setAnfrage("generateIsbn mit Gruppennummer: "+gnumber+", Verlagsnummer: "+vnumber+" und Titelnummer: "+tnumber);
             try {
                 isbn = generateISBN(gnumber, vnumber, tnumber);
             } catch (Exception e) {
-                h.setAntwort("Fehler: "+e.getMessage());
                 return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("Fehler: "+e.getMessage()).build();
             }
-            h.setAntwort("The calculated ISBN is \""+isbn+"\".");
             return request.createResponseBuilder(HttpStatus.OK).body(isbn).build();
         }
     }
 
-    public boolean validateIsbn(String isbn) {
+    private boolean validateIsbn(String isbn) {
         if (isbn.length() != 10) {
             return false;
         }
@@ -193,7 +145,7 @@ public class Function {
             return true;
     }
 
-    public char calculateCheckDigit(String isbn) throws Exception{
+    private char calculateCheckDigit(String isbn) throws Exception{
         if(isbn.length() != 9){
             throw new Exception("Der ISBN-String hat die falsche Länge!");
         }
@@ -221,13 +173,10 @@ public class Function {
         return Character.forDigit(modulo, 10);
     }
 
-    public String generateISBN(String gnumber, String vnumber, String tnumber) throws Exception{
+    private String generateISBN(String gnumber, String vnumber, String tnumber) throws Exception{
         String isbn = gnumber + "-" + vnumber + "-" + tnumber + "-";
         char checkDigit = calculateCheckDigit(gnumber+vnumber+tnumber);
         isbn = isbn + checkDigit;
         return isbn;
     }
-
-    
-    //TODO format Methode
 }
