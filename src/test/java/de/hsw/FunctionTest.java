@@ -43,7 +43,8 @@ public class FunctionTest {
         final HttpResponseMessage ret = new Function().validateIsbn(req, context);
 
         assertEquals(HttpStatus.OK, ret.getStatus());
-        assertEquals("valid", ret.getBody().toString(), "ISBN wird nicht validiert, Antwort lautet: "+ret.getBody().toString());
+        assertEquals("valid", ret.getBody().toString(), "ISBN wird nicht validiert, Antwort lautet: "//
+        +ret.getBody().toString());
     }
 
         /**
