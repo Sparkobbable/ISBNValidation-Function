@@ -139,10 +139,7 @@ public class Function {
             sum = sum + (nextInt * i);
         }
         double modulo = sum % 11;
-        if (modulo != 0) {
-            return false;
-        } else
-            return true;
+        return (modulo == 0);
     }
 
     private char calculateCheckDigit(String isbn) throws Exception{
